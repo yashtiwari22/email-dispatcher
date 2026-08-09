@@ -1,137 +1,117 @@
-# Concurrent Email Dispatcher in Go
+# ⚡ Production High-Throughput Email Dispatcher Monorepo
 
-A high-performance, concurrent bulk email dispatcher built in Go using the **Producer-Consumer pattern**, Go channels, `sync.WaitGroup` worker pools, and HTML/text templating. Designed to process recipient lists from CSV files and send emails concurrently via an SMTP server (e.g., [Mailpit](https://github.com/axllent/mailpit) for local testing).
+> A production-grade, distributed email dispatching system built using a Go REST API Gateway, Redis-backed Asynq worker pools, GORM PostgreSQL storage, Server-Sent Events (SSE) real-time delivery tracking, and a Next.js 15 App Router web dashboard.
 
 ---
 
-## 📐 System Architecture
+## 🏛 System Architecture
 
+```text
+               ┌─────────────────────────────────────────┐
+               │    Next.js 15 App Router Web Dashboard   │
+               │        (TailwindCSS + Lucide UI)         │
+               └────────────────────┬────────────────────┘
+                                    │
+                                    │ HTTP REST API / SSE Stream
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                   Go REST API Gateway (backend/api)                    │
+│   ├── POST /api/v1/campaigns        ├── POST /api/v1/campaigns/upload │
+│   ├── GET  /api/v1/campaigns/stream └── POST /api/v1/dlq/:id/replay    │
+└──────────────────┬─────────────────────────────────┬───────────────────┘
+                   │                                 │
+     Enqueues Tasks│                                 │ GORM Queries
+                   ▼                                 ▼
+┌──────────────────────────────────┐      ┌──────────────────────────────┐
+│  Redis 7 Asynq Task Queue        │      │ PostgreSQL 16 Storage        │
+│  (Exponential Backoff & DLQ)     │      │ (Campaigns, Logs, DLQ)       │
+└──────────────────┬───────────────┘      └──────────────┬───────────────┘
+                   │                                     │
+                   │ Dequeues Jobs                       │ Updates Status
+                   ▼                                     │
+┌────────────────────────────────────────────────────────┴───────────────┐
+│              Asynq Worker Engine Pool (backend/engine)                │
+│   ├── Thread-Safe Template Cache (sync.RWMutex + html/template)        │
+│   └── Zero-Allocation SMTP Formatter (fmt.Appendf)                     │
+└──────────────────┬─────────────────────────────────────────────────────┘
+                   │
+                   ▼
+   ┌───────────────────────────────┐
+   │    SMTP Server / Mailpit UI    │
+   └───────────────────────────────┘
 ```
-                       +------------------+
-                       |    emails.csv    |
-                       +--------+---------+
-                                |
-                                v
-                      +-------------------+
-                      |   loadRecipients  | (Producer Goroutine)
-                      |   (producer.go)   |
-                      +---------+---------+
-                                |
-                                |  Recipient Channel (chan Recipient)
-                                v
-               +---------------------------------+
-               |   Worker Pool (workerCount = 5) |
-               +--------+-------+-------+--------+
-                        |       |       |
-            +-----------+       |       +-----------+
-            |                   v                   |
-   +-----------------+ +-----------------+ +-----------------+
-   | Worker 1        | | Worker 2..4     | | Worker 5        |
-   | (consumer.go)   | | (consumer.go)   | | (consumer.go)   |
-   +--------+--------+ +--------+--------+ +--------+--------+
-            |                   |                   |
-            +-----------+       |       +-----------+
-                        |       v       |
-                        v               v
-                     +---------------------+
-                     |  executeTemplate()  | (email.tmpl)
-                     +----------+----------+
-                                |
-                                v
-                     +---------------------+
-                     |   net/smtp Mail     |
-                     |  (localhost:1025)   |
-                     +---------------------+
+
+---
+
+## ⚡ Key Engineering Highlights & Resume Bullet Points
+
+- **High-Throughput Distributed Worker Queue**: Built on Redis-backed `Asynq`, delivering exponential backoff retries (3 retries max), timeout protection, and automatic Dead-Letter Queue (DLQ) capture for unrecoverable delivery errors.
+- **Zero-Allocation SMTP Formatting**: Utilizes Go 1.19+ `fmt.Appendf(nil, ...)` to format RFC 822 email payloads directly into byte buffers, bypassing intermediate string allocations.
+- **Thread-Safe Template Caching**: Implemented a `sync.RWMutex` concurrent compilation engine for Go `html/template`, ensuring zero template re-parsing overhead under heavy worker concurrency.
+- **Chunked CSV Streaming Uploader**: Memory-efficient multipart CSV parser (`backend/api/handlers_csv.go`) processing large recipient lists in 250-row chunks to prevent heap spikes.
+- **Real-Time Progress SSE Stream**: Built a Server-Sent Events (`GET /api/v1/campaigns/:id/stream`) endpoint pushing live progress metrics (`sent`, `failed`, `progress%`) to connected Next.js dashboard clients.
+- **Interactive DLQ Management UI**: Visual inspector table allowing developers to inspect failed job JSON payloads and trigger 1-click re-enqueue replays (`POST /api/v1/dlq/:id/replay`).
+- **GitHub Stacked PR Protocol**: Architected using GitHub's native stacked PR protocol (`gh stack`), partitioning the system into small, reviewable layers.
+
+---
+
+## 🥞 GitHub Stacked PR Architecture
+
+```text
+layer-6-deployment-cicd  → PR #7 (base: main)                        ← Current Layer
+layer-5-nextjs-web       → PR #6 (base: main) [Merged]
+layer-4-api-gateway      → PR #5 (base: main) [Merged]
+layer-3-worker-engine     → PR #4 (base: main) [Merged]
+layer-2-db-schema        → PR #2 (base: main) [Merged]
+layer-1-infra-monorepo   → PR #1 (base: main) [Merged]
+main (default trunk branch)
 ```
+
+---
+
+## 🛠 100% Free Local Quickstart
+
+### Prerequisites
+- [Docker & Docker Compose](https://docs.docker.com/get-docker/)
+- [Go 1.22+](https://go.dev/dl/)
+- [Node.js 20+ & pnpm](https://pnpm.io/)
+
+### 1. Start Infrastructure (PostgreSQL, Redis, Mailpit)
+```bash
+docker-compose -f infra/docker-compose.yml up -d
+```
+
+### 2. Run All Go Backend Tests
+```bash
+go test -v ./backend/db ./backend/engine ./backend/api
+```
+
+### 3. Start Next.js 15 Web Dashboard
+```bash
+cd frontend
+pnpm install
+pnpm dev
+```
+Open [http://localhost:3000](http://localhost:3000) in your browser. Mailpit SMTP web UI is available at [http://localhost:8025](http://localhost:8025).
 
 ---
 
 ## 📁 Repository Structure
 
-| File | Description |
-| :--- | :--- |
-| [`main.go`](file:///Users/yash/workspace/personal/email-dispatcher/main.go) | Entry point. Defines the `Recipient` struct, initializes channels, launches the producer goroutine, spawns 5 concurrent workers using `sync.WaitGroup`, and contains `executeTemplate`. |
-| [`producer.go`](file:///Users/yash/workspace/personal/email-dispatcher/producer.go) | Implements `loadRecipients()`, which streams entries from a CSV file into the recipient channel and closes the channel when finished. |
-| [`consumer.go`](file:///Users/yash/workspace/personal/email-dispatcher/consumer.go) | Implements `emailWorker()`, which consumes recipients from the channel, executes email templating, and dispatches messages via SMTP. |
-| [`email.tmpl`](file:///Users/yash/workspace/personal/email-dispatcher/email.tmpl) | Go template containing email headers (`To`, `Subject`) and body text. |
-| [`emails.csv`](file:///Users/yash/workspace/personal/email-dispatcher/emails.csv) | CSV dataset containing `Name` and `Email` columns (20 mock records included). |
-| [`info.md`](file:///Users/yash/workspace/personal/email-dispatcher/info.md) | Quick reference command for starting Mailpit SMTP test server via Docker. |
-| [`go.mod`](file:///Users/yash/workspace/personal/email-dispatcher/go.mod) | Go module definition (`github.com/yashtiwari22/email-dispatcher`, Go 1.26). |
-
----
-
-## ⚙️ How It Works
-
-### 1. Data Ingestion (Producer)
-- The [`loadRecipients`](file:///Users/yash/workspace/personal/email-dispatcher/producer.go#L8) function opens `emails.csv`, parses the records using Go's `encoding/csv` package, skips the header row, and pushes `Recipient` structs into an unbuffered Go channel (`chan Recipient`).
-- `defer close(ch)` guarantees that the channel is closed once all CSV rows are emitted, signaling workers to shut down gracefully.
-
-### 2. Concurrent Processing (Worker Pool / Consumer)
-- Main spawns 5 concurrent [`emailWorker`](file:///Users/yash/workspace/personal/email-dispatcher/consumer.go#L11) goroutines.
-- Each worker continuously receives `Recipient` objects from the shared channel using a `for recipient := range ch` loop.
-- Synchronization is tracked using `sync.WaitGroup`.
-
-### 3. Dynamic Templating & Dispatch
-- Each email body is rendered via [`executeTemplate`](file:///Users/yash/workspace/personal/email-dispatcher/main.go#L35) using [`email.tmpl`](file:///Users/yash/workspace/personal/email-dispatcher/email.tmpl).
-- The formatted message is sent via standard `net/smtp.SendMail` to the target SMTP host (`localhost:1025`).
-- A small throttle duration (`50ms`) is introduced per job to simulate realistic network delay and avoid hammering the SMTP provider.
-
----
-
-## 🚀 Getting Started
-
-### Prerequisites
-- **Go**: Version 1.22+ installed
-- **Docker**: For running Mailpit (SMTP Mock Server)
-
-### Step 1: Start Mailpit (Local SMTP Mock Server)
-Mailpit captures sent emails in a local web interface without sending actual emails to real recipients.
-
-```bash
-docker run -d \
-  --restart unless-stopped \
-  --name=mailpit \
-  -p 8025:8025 \
-  -p 1025:1025 \
-  axllent/mailpit
+```text
+.
+├── .github/workflows/ci.yml     # Automated GitHub Actions CI workflow
+├── backend/
+│   ├── db/                      # GORM PostgreSQL entity models & SQLite test suite
+│   ├── engine/                  # Asynq worker server, template cache & SMTP sender
+│   └── api/                     # Go REST API gateway, CSV uploader & SSE stream
+├── frontend/                    # Next.js 15 App Router web dashboard & DLQ UI
+├── infra/
+│   ├── docker-compose.yml       # Local dev services (Postgres 16, Redis 7, Mailpit)
+│   ├── Dockerfile.api           # Production multi-stage API Dockerfile (<30MB)
+│   ├── Dockerfile.web           # Production Next.js web Dockerfile
+│   └── render.yaml              # Free-tier cloud container deployment spec
+├── go.work                      # Native Go multi-module workspace definition
+├── pnpm-workspace.yaml          # Monorepo pnpm workspace definition
+└── TASKS.md                     # Master project task reference checklist
 ```
-- **SMTP Server**: `localhost:1025`
-- **Mailpit Web UI**: `http://localhost:8025`
-
-### Step 2: Run the Dispatcher
-
-```bash
-go run .
-```
-
----
-
-## 🛠 Tech Stack
-
-- **Language**: Go (`go 1.26.5`)
-- **Concurrency**: Goroutines, Unbuffered Channels (`chan Recipient`), `sync.WaitGroup`
-- **Templating**: `html/template`
-- **Networking**: `net/smtp`
-- **Testing SMTP Server**: [Mailpit](https://github.com/axllent/mailpit)
-
----
-
-## 💡 Codebase Observations & Optimization Opportunities
-
-1. **Template Parsing Optimization**:
-   - *Current*: [`executeTemplate`](file:///Users/yash/workspace/personal/email-dispatcher/main.go#L35) parses `email.tmpl` on every single email processed (`template.ParseFiles("email.tmpl")`).
-   - *Improvement*: Parse the template once during application startup (e.g., `template.Must(template.ParseFiles("email.tmpl"))`) and reuse the parsed `*template.Template` across goroutines to eliminate unnecessary disk I/O and CPU overhead.
-
-2. **SMTP Error Handling**:
-   - *Current*: `emailWorker` invokes [`log.Fatal(err)`](file:///Users/yash/workspace/personal/email-dispatcher/consumer.go#L32) on SMTP sending failure, which terminates the entire process immediately.
-   - *Improvement*: Replace `log.Fatal` with retry logic or log the error and send the failed job to a Dead Letter Queue (DLQ).
-
-3. **Dead Letter Queue (DLQ)**:
-   - As noted by the `// todo: add to dlq` comment in [`consumer.go`](file:///Users/yash/workspace/personal/email-dispatcher/consumer.go#L24), failed template parsing or SMTP delivery should push failed items into a dedicated retry/DLQ channel for further inspection or retry.
-
-4. **SMTP Connection Reuse**:
-   - *Current*: Opens a new SMTP connection per email with `smtp.SendMail`.
-   - *Improvement*: Maintain persistent SMTP client connections or connection pooling per worker using `smtp.Client` (`Dial`, `Mail`, `Rcpt`, `Data`) to reduce TCP connection overhead.
-
-5. **Configurability**:
-   - Hardcoded parameters (`workerCount`, `smtpHost`, `smptPort`, sender email, file paths) can be extracted to environment variables or CLI flags (`flag` package or `envconfig`).

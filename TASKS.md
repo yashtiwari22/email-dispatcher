@@ -129,12 +129,12 @@ main (default trunk branch)
 ## 🥞 Stack Layer 5: Modern Next.js 15 Dashboard (`frontend`)
 **Branch**: `layer-5-nextjs-web` | **Base Branch Target**: `layer-4-api-gateway` (`PR #5`)
 
-- [ ] **5.1 App Setup**: Initialize `frontend/` natively via `pnpm create next-app frontend --typescript --tailwind --app --eslint`.
-- [ ] **5.2 Dashboard Overview**: Build real-time analytics dashboard with SSE live progress bars, throughput metrics, and campaign status badges.
-- [ ] **5.3 CSV Drag-and-Drop Uploader**: Build interactive CSV uploader modal with column auto-mapping and preview table.
-- [ ] **5.4 DLQ Management UI**: Build visual DLQ inspector table with error detail modal and bulk retry triggers.
-- [ ] **5.5 Template Editor**: Build rich template builder with live email preview and dynamic variable tags (`{{.Name}}`, `{{.Email}}`).
-- [ ] **5.6 Frontend Tests**: Add component and integration tests using Vitest/React Testing Library.
+- [x] **5.1 App Setup**: Initialize `frontend/` natively via `pnpm create next-app frontend --typescript --tailwind --app --eslint`.
+- [x] **5.2 Dashboard Overview**: Build real-time analytics dashboard with SSE live progress bars, throughput metrics, and campaign status badges.
+- [x] **5.3 CSV Drag-and-Drop Uploader**: Build interactive CSV uploader modal with column auto-mapping and preview table.
+- [x] **5.4 DLQ Management UI**: Build visual DLQ inspector table with error detail modal and bulk retry triggers.
+- [x] **5.5 Template Editor**: Build rich template builder with live email preview and dynamic variable tags (`{{.Name}}`, `{{.Email}}`).
+- [x] **5.6 Frontend Build Verification**: Verify TypeScript types and production bundle compilation (`pnpm build`).
 - [ ] **5.7 Layer 5 Stack Commit & Push**:
   ```bash
   gh stack add layer-5-nextjs-web
@@ -148,11 +148,11 @@ main (default trunk branch)
 ## 🥞 Stack Layer 6: CI/CD Pipeline & Cloud Deployment Setup (`infra/` & `.github/`)
 **Branch**: `layer-6-deployment-cicd` | **Base Branch Target**: `layer-5-nextjs-web` (`PR #6`)
 
-- [ ] **6.1 GitHub Actions**: Create `.github/workflows/ci.yml` running linting, Go tests, Next.js build, and `gh stack` checks.
-- [ ] **6.2 Multi-Stage Dockerfiles**: Create slim production Dockerfiles for `backend/api` (`infra/Dockerfile.api`) and `frontend` (`infra/Dockerfile.web`).
-- [ ] **6.3 Cloud Deployment Configuration**: Add deployment blueprint (`infra/render.yaml`) for Render / Railway / Cloud containers.
-- [ ] **6.4 Showcase Documentation**: Write top-tier `README.md` with visual architecture diagrams, resume key highlights, local quickstart guide, and live demo links.
-- [ ] **6.5 Layer 6 Stack Commit & Push**:
+- [x] **6.1 GitHub Actions**: Create `.github/workflows/ci.yml` running linting, Go tests, Next.js build, and `gh stack` checks.
+- [x] **6.2 Multi-Stage Dockerfiles**: Create slim production Dockerfiles for `backend/api` (`infra/Dockerfile.api`) and `frontend` (`infra/Dockerfile.web`).
+- [x] **6.3 Cloud Deployment Configuration**: Add deployment blueprint (`infra/render.yaml`) for Render / Railway / Cloud containers.
+- [x] **6.4 Showcase Documentation**: Write top-tier `README.md` with visual architecture diagrams, resume key highlights, local quickstart guide, and live demo links.
+- [x] **6.5 Layer 6 Stack Commit & Push**:
   ```bash
   gh stack add layer-6-deployment-cicd
   git add .

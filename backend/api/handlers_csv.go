@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/yashtiwari22/email-dispatcher/backend/db"
-	"github.com/yashtiwari22/email-dispatcher/backend/engine"
+	engine "github.com/yashtiwari22/email-dispatcher/backend/engine"
 	"gorm.io/gorm"
 )
 

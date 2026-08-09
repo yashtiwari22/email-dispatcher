@@ -11,7 +11,7 @@ services:
         fromService:
           type: web
           name: email-dispatcher-api
-          property: url
+          property: host
 
   # 2. Go REST API Gateway & Worker Engine
   - type: web
@@ -41,29 +41,10 @@ services:
         fromDatabase:
           name: email-dispatcher-db
           property: database
-      - key: REDIS_HOST
-        fromService:
-          type: pserv
-          name: email-dispatcher-redis
-          property: host
-      - key: REDIS_PORT
-        fromService:
-          type: pserv
-          name: email-dispatcher-redis
-          property: port
-
-  # 3. Redis Task Queue Service
-  - type: pserv
-    name: email-dispatcher-redis
-    env: docker
-    dockerfilePath: ./infra/Dockerfile.redis
-    plan: free
-    region: oregon
 
 databases:
-  # 4. PostgreSQL Database
+  # 3. PostgreSQL Database
   - name: email-dispatcher-db
     databaseName: email_dispatcher
-    user: postgres
     plan: free
     region: oregon

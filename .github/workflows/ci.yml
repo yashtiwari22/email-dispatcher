@@ -42,7 +42,7 @@ jobs:
           cache-dependency-path: 'frontend/pnpm-lock.yaml'
 
       - name: Install Dependencies
-        run: cd frontend && pnpm install
+        run: pnpm install
 
       - name: Next.js Production Build
-        run: cd frontend && pnpm build
+        run: pnpm --filter frontend build

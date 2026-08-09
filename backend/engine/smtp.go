@@ -39,12 +39,12 @@ func (s *RealSMTPSender) SendEmail(to string, subject string, body string) error
 		auth = smtp.PlainAuth("", s.Username, s.Password, s.Host)
 	}
 
-	msg := []byte(fmt.Sprintf("To: %s\r\n"+
+	msg := fmt.Appendf(nil, "To: %s\r\n"+
 		"From: %s\r\n"+
 		"Subject: %s\r\n"+
 		"MIME-Version: 1.0\r\n"+
 		"Content-Type: text/html; charset=UTF-8\r\n\r\n"+
-		"%s", to, s.From, subject, body))
+		"%s", to, s.From, subject, body)
 
 	if err := smtp.SendMail(addr, auth, s.From, []string{to}, msg); err != nil {
 		return fmt.Errorf("failed to send email to %s: %w", to, err)

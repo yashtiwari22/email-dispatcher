@@ -94,7 +94,7 @@ main (default trunk branch)
 - [x] **3.3 Template Caching & SMTP**: Implement thread-safe `html/template` caching engine and SMTP connection pool.
 - [x] **3.4 Resilience & DLQ**: Implement exponential backoff retry policy and automatic dead-letter queue (DLQ) capture for failed jobs.
 - [x] **3.5 Engine Tests**: Add unit & integration tests for job dispatching, template execution, SMTP client, and DLQ capture (`backend/engine/template_test.go`).
-- [ ] **3.6 Layer 3 Stack Commit & Push**:
+- [x] **3.6 Layer 3 Stack Commit & Push**:
   ```bash
   gh stack add layer-3-worker-engine
   mkdir -p backend/engine && cd backend/engine && go mod init github.com/yashtiwari22/email-dispatcher/backend/engine
@@ -108,13 +108,13 @@ main (default trunk branch)
 ## 🥞 Stack Layer 4: REST API Gateway & Real-Time SSE Stream (`backend/api`)
 **Branch**: `layer-4-api-gateway` | **Base Branch Target**: `layer-3-worker-engine` (`PR #4`)
 
-- [ ] **4.1 Module Initialization**: Initialize `backend/api` natively via `go mod init` and `go work use ./backend/api`.
-- [ ] **4.2 CSV Streaming Uploader**: Implement `POST /api/v1/campaigns/upload` for chunked CSV parsing and instant batch job queuing.
-- [ ] **4.3 Campaign Endpoints**: Implement Campaign CRUD (`POST`, `GET`, `GET /:id`, `PATCH /:id/status`).
-- [ ] **4.4 Real-Time Progress SSE**: Implement Server-Sent Events (`GET /api/v1/campaigns/:id/stream`) pushing live progress metrics to clients.
-- [ ] **4.5 DLQ Replay API**: Implement DLQ endpoints (`GET /api/v1/dlq`, `POST /api/v1/dlq/:id/replay`, `DELETE /api/v1/dlq`).
-- [ ] **4.6 Observability**: Add `/healthz` and `/readyz` probes with structured JSON logging.
-- [ ] **4.7 API Tests**: Write HTTP integration tests for endpoints and stream handlers (`backend/api/handlers_test.go`).
+- [x] **4.1 Module Initialization**: Initialize `backend/api` natively via `go mod init` and `go work use ./backend/api`.
+- [x] **4.2 CSV Streaming Uploader**: Implement `POST /api/v1/campaigns/upload` for chunked CSV parsing and instant batch job queuing.
+- [x] **4.3 Campaign Endpoints**: Implement Campaign CRUD (`POST`, `GET`, `GET /:id`, `PATCH /:id/status`).
+- [x] **4.4 Real-Time Progress SSE**: Implement Server-Sent Events (`GET /api/v1/campaigns/:id/stream`) pushing live progress metrics to clients.
+- [x] **4.5 DLQ Replay API**: Implement DLQ endpoints (`GET /api/v1/dlq`, `POST /api/v1/dlq/:id/replay`, `DELETE /api/v1/dlq`).
+- [x] **4.6 Observability**: Add `/healthz` and `/readyz` probes with structured JSON logging.
+- [x] **4.7 API Tests**: Write HTTP integration tests for endpoints and stream handlers (`backend/api/handlers_test.go`).
 - [ ] **4.8 Layer 4 Stack Commit & Push**:
   ```bash
   gh stack add layer-4-api-gateway

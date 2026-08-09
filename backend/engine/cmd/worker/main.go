@@ -19,8 +19,8 @@ func getEnvOrDefault(key, defaultValue string) string {
 }
 
 func main() {
-	dbHost := getEnvOrDefault("DB_HOST", "localhost")
-	dbPort := getEnvOrDefault("DB_PORT", "5432")
+	dbHost := getEnvOrDefault("DB_HOST", "127.0.0.1")
+	dbPort := getEnvOrDefault("DB_PORT", "5434")
 	dbUser := getEnvOrDefault("DB_USER", "postgres")
 	dbPassword := getEnvOrDefault("DB_PASSWORD", "postgres")
 	dbName := getEnvOrDefault("DB_NAME", "email_dispatcher")

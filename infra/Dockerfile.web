@@ -15,23 +15,20 @@ RUN pnpm install --frozen-lockfile
 # Copy frontend source code
 COPY frontend ./frontend
 
-# Build Next.js 15 production bundle
+# Build Next.js production bundle
 ENV NEXT_TELEMETRY_DISABLED 1
 RUN cd frontend && pnpm build
 
-# Stage 2: Production runner
+# Stage 2: Minimal production runner
 FROM node:20-alpine AS runner
 
-WORKDIR /app
+WORKDIR /app/frontend
 ENV NODE_ENV production
 ENV NEXT_TELEMETRY_DISABLED 1
 
-# Copy built application and standalone files
-COPY --from=builder /app/frontend/public ./frontend/public
-COPY --from=builder /app/frontend/.next ./frontend/.next
-COPY --from=builder /app/frontend/node_modules ./frontend/node_modules
-COPY --from=builder /app/frontend/package.json ./frontend/package.json
+# Copy built application & node_modules
+COPY --from=builder /app/frontend ./
 
 EXPOSE 3000
 
-CMD ["pnpm", "--filter", "frontend", "start"]
+CMD ["npm", "run", "start"]

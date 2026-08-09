@@ -1,0 +1,37 @@
+# Stage 1: Install dependencies & build Next.js app
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# Copy package manifests
+COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
+COPY frontend/package.json ./frontend/
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile
+
+# Copy frontend source code
+COPY frontend ./frontend
+
+# Build Next.js 15 production bundle
+ENV NEXT_TELEMETRY_DISABLED 1
+RUN cd frontend && pnpm build
+
+# Stage 2: Production runner
+FROM node:20-alpine AS runner
+
+WORKDIR /app
+ENV NODE_ENV production
+ENV NEXT_TELEMETRY_DISABLED 1
+
+# Copy built application and standalone files
+COPY --from=builder /app/frontend/public ./frontend/public
+COPY --from=builder /app/frontend/.next ./frontend/.next
+COPY --from=builder /app/frontend/node_modules ./frontend/node_modules
+COPY --from=builder /app/frontend/package.json ./frontend/package.json
+
+EXPOSE 3000
+
+CMD ["pnpm", "--filter", "frontend", "start"]

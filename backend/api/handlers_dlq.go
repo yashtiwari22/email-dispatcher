@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/yashtiwari22/email-dispatcher/backend/db"
-	"github.com/yashtiwari22/email-dispatcher/backend/engine"
+	engine "github.com/yashtiwari22/email-dispatcher/backend/engine"
 )
 
 // registerDLQRoutes registers DLQ management HTTP handlers.

@@ -184,18 +184,22 @@ export default function Dashboard() {
               return (
                 <div
                   key={c.id}
-                  className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 flex flex-col justify-between hover:border-zinc-700 transition-all shadow-xl"
+                  onClick={() => setActiveInspectCampaignId(c.id)}
+                  className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 flex flex-col justify-between hover:border-indigo-500/40 hover:bg-zinc-900/80 transition-all shadow-xl cursor-pointer group"
                 >
                   <div>
                     <div className="flex items-start justify-between mb-3">
-                      <h3 className="font-bold text-white text-base truncate max-w-[200px]">{c.title}</h3>
+                      <h3 className="font-bold text-white text-base truncate max-w-[200px] group-hover:text-indigo-300 transition-colors">
+                        {c.title}
+                      </h3>
                       <span
-                        className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${c.status === "completed"
+                        className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+                          c.status === "completed"
                             ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
                             : c.status === "queued" || c.status === "processing"
                               ? "bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 animate-pulse"
                               : "bg-zinc-800 text-zinc-400"
-                          }`}
+                        }`}
                       >
                         {c.status}
                       </span>
@@ -228,7 +232,10 @@ export default function Dashboard() {
                   {/* Actions */}
                   <div className="pt-4 border-t border-zinc-800/80 flex items-center justify-between">
                     <button
-                      onClick={() => setActiveInspectCampaignId(c.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveInspectCampaignId(c.id);
+                      }}
                       className="flex items-center gap-1 text-[11px] font-semibold text-indigo-400 hover:text-indigo-300 transition-colors"
                     >
                       <Eye className="w-3.5 h-3.5" />
@@ -236,7 +243,10 @@ export default function Dashboard() {
                     </button>
 
                     <button
-                      onClick={() => setActiveUploadCampaign({ id: c.id, title: c.title })}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveUploadCampaign({ id: c.id, title: c.title });
+                      }}
                       className="flex items-center gap-1.5 rounded-lg bg-zinc-800 px-3 py-1.5 text-xs font-medium text-zinc-200 hover:bg-zinc-700 hover:text-white transition-colors"
                     >
                       <Upload className="w-3.5 h-3.5 text-indigo-400" />

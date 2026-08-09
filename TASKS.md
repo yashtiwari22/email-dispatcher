@@ -152,7 +152,7 @@ main (default trunk branch)
 - [x] **6.2 Multi-Stage Dockerfiles**: Create slim production Dockerfiles for `backend/api` (`infra/Dockerfile.api`) and `frontend` (`infra/Dockerfile.web`).
 - [x] **6.3 Cloud Deployment Configuration**: Add deployment blueprint (`infra/render.yaml`) for Render / Railway / Cloud containers.
 - [x] **6.4 Showcase Documentation**: Write top-tier `README.md` with visual architecture diagrams, resume key highlights, local quickstart guide, and live demo links.
-- [ ] **6.5 Layer 6 Stack Commit & Push**:
+- [x] **6.5 Layer 6 Stack Commit & Push**:
   ```bash
   gh stack add layer-6-deployment-cicd
   git add .

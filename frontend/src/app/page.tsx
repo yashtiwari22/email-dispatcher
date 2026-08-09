@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import React, { useState, useEffect } from "react";
 import {
   Send,
@@ -230,13 +232,13 @@ export default function Dashboard() {
                   </div>
 
                   {/* Actions */}
-                  <div className="pt-4 border-t border-zinc-800/80 flex items-center justify-between">
+                  <div className="pt-4 border-t border-zinc-800/80 flex items-center justify-between gap-2">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         setActiveInspectCampaignId(c.id);
                       }}
-                      className="flex items-center gap-1 text-[11px] font-semibold text-indigo-400 hover:text-indigo-300 transition-colors"
+                      className="flex items-center gap-1.5 rounded-lg border border-indigo-500/30 bg-indigo-500/10 px-3 py-1.5 text-xs font-semibold text-indigo-300 hover:bg-indigo-500/20 hover:text-white transition-all"
                     >
                       <Eye className="w-3.5 h-3.5" />
                       <span>View Details</span>
@@ -247,7 +249,7 @@ export default function Dashboard() {
                         e.stopPropagation();
                         setActiveUploadCampaign({ id: c.id, title: c.title });
                       }}
-                      className="flex items-center gap-1.5 rounded-lg bg-zinc-800 px-3 py-1.5 text-xs font-medium text-zinc-200 hover:bg-zinc-700 hover:text-white transition-colors"
+                      className="flex items-center gap-1.5 rounded-lg bg-zinc-800 border border-zinc-700 px-3 py-1.5 text-xs font-medium text-zinc-200 hover:bg-zinc-700 hover:text-white transition-colors"
                     >
                       <Upload className="w-3.5 h-3.5 text-indigo-400" />
                       <span>Upload CSV</span>

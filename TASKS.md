@@ -57,7 +57,7 @@ main (default trunk branch)
 - [x] **1.3 Dev Container Services**: Create `infra/docker-compose.yml` orchestrating PostgreSQL 16, Redis 7, and Mailpit.
 - [x] **1.4 Environment Template**: Create `.env.example` with generic configuration placeholders (`DB_HOST`, `DB_PORT`, `REDIS_HOST`, `SMTP_PORT`).
 - [x] **1.5 Root Tooling**: Initialize root `package.json`, `.gitignore`, Prettier, and ESLint configs.
-- [ ] **1.6 Layer 1 Stack Commit & Push**:
+- [x] **1.6 Layer 1 Stack Commit & Push**:
   ```bash
   gh stack add layer-1-infra-monorepo
   go work init .
@@ -70,11 +70,11 @@ main (default trunk branch)
 ## 🥞 Stack Layer 2: Database Schema & Domain Data Layer (`backend/db`)
 **Branch**: `layer-2-db-schema` | **Base Branch Target**: `layer-1-infra-monorepo` (`PR #2`)
 
-- [ ] **2.1 Module Initialization**: Initialize `backend/db` natively via `go mod init` and `go work use ./backend/db`.
-- [ ] **2.2 Schema Definitions**: Define PostgreSQL tables & models for `campaigns`, `recipients`, `email_templates`, `dispatch_logs`, `dlq_records`.
-- [ ] **2.3 Data Layer & Migrations**: Implement GORM connection manager, auto-migrations, and connection pooling.
-- [ ] **2.4 Seeding Utility**: Create database seed script (`backend/db/seed.go`) with realistic mock datasets.
-- [ ] **2.5 Automated Tests**: Add unit tests for DB initialization, CRUD operations, and transaction support (`backend/db/db_test.go`).
+- [x] **2.1 Module Initialization**: Initialize `backend/db` natively via `go mod init` and `go work use ./backend/db`.
+- [x] **2.2 Schema Definitions**: Define PostgreSQL tables & models for `campaigns`, `recipients`, `email_templates`, `dispatch_logs`, `dlq_records`.
+- [x] **2.3 Data Layer & Migrations**: Implement GORM connection manager, auto-migrations, and connection pooling.
+- [x] **2.4 Seeding Utility**: Create database seed script (`backend/db/seed.go`) with realistic mock datasets.
+- [x] **2.5 Automated Tests**: Add unit tests for DB initialization, CRUD operations, and transaction support (`backend/db/db_test.go`).
 - [ ] **2.6 Layer 2 Stack Commit & Push**:
   ```bash
   gh stack add layer-2-db-schema

@@ -12,16 +12,19 @@ import {
   AlertTriangle,
   Clock,
   Zap,
+  Eye,
 } from "lucide-react";
 import { Campaign, getCampaigns, subscribeToCampaignSSE, ProgressEvent } from "@/lib/api";
 import UploadCSVModal from "@/components/UploadCSVModal";
 import DLQInspectorModal from "@/components/DLQInspectorModal";
 import CreateCampaignModal from "@/components/CreateCampaignModal";
+import CampaignDetailsModal from "@/components/CampaignDetailsModal";
 
 export default function Dashboard() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeUploadCampaign, setActiveUploadCampaign] = useState<{ id: number; title: string } | null>(null);
+  const [activeInspectCampaignId, setActiveInspectCampaignId] = useState<number | null>(null);
   const [isDLQOpen, setIsDLQOpen] = useState(false);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
@@ -224,9 +227,13 @@ export default function Dashboard() {
 
                   {/* Actions */}
                   <div className="pt-4 border-t border-zinc-800/80 flex items-center justify-between">
-                    <span className="text-[10px] text-zinc-500">
-                      ID: #{c.id}
-                    </span>
+                    <button
+                      onClick={() => setActiveInspectCampaignId(c.id)}
+                      className="flex items-center gap-1 text-[11px] font-semibold text-indigo-400 hover:text-indigo-300 transition-colors"
+                    >
+                      <Eye className="w-3.5 h-3.5" />
+                      <span>View Details</span>
+                    </button>
 
                     <button
                       onClick={() => setActiveUploadCampaign({ id: c.id, title: c.title })}
@@ -244,6 +251,14 @@ export default function Dashboard() {
       </main>
 
       {/* Modals */}
+      {activeInspectCampaignId && (
+        <CampaignDetailsModal
+          campaignId={activeInspectCampaignId}
+          isOpen={!!activeInspectCampaignId}
+          onClose={() => setActiveInspectCampaignId(null)}
+        />
+      )}
+
       {activeUploadCampaign && (
         <UploadCSVModal
           campaignId={activeUploadCampaign.id}

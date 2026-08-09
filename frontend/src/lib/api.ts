@@ -40,10 +40,32 @@ export interface ProgressEvent {
   progress_pct: number;
 }
 
+export interface Recipient {
+  id: number;
+  campaign_id: number;
+  name: string;
+  email: string;
+  status: 'pending' | 'sent' | 'failed';
+  error_message?: string;
+  sent_at?: string;
+  created_at: string;
+}
+
+export interface CampaignDetails extends Campaign {
+  recipients: Recipient[];
+}
+
 // Fetch all campaigns
 export async function getCampaigns(): Promise<Campaign[]> {
   const res = await fetch(`${getApiBaseUrl()}/api/v1/campaigns`, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to fetch campaigns");
+  return res.json();
+}
+
+// Fetch single campaign details with recipients
+export async function getCampaignDetails(id: number): Promise<CampaignDetails> {
+  const res = await fetch(`${getApiBaseUrl()}/api/v1/campaigns/${id}`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Failed to fetch campaign details");
   return res.json();
 }
 

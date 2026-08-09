@@ -136,8 +136,13 @@ func (wp *WorkerProcessor) HandleDLQ(ctx context.Context, t *asynq.Task, err err
 	var payload EmailTaskPayload
 	_ = json.Unmarshal(t.Payload(), &payload)
 
+	jobID := fmt.Sprintf("job_%d_%d", payload.CampaignID, payload.RecipientID)
+	if rw := t.ResultWriter(); rw != nil {
+		jobID = rw.TaskID()
+	}
+
 	dlq := db.DLQRecord{
-		JobID:          t.ResultWriter().TaskID(),
+		JobID:          jobID,
 		CampaignID:     payload.CampaignID,
 		RecipientEmail: payload.RecipientEmail,
 		ErrorReason:    err.Error(),
@@ -149,3 +154,4 @@ func (wp *WorkerProcessor) HandleDLQ(ctx context.Context, t *asynq.Task, err err
 	wp.db.Create(&dlq)
 	log.Printf("[DLQ] Recorded failed job for recipient %s (Campaign #%d) in Dead Letter Queue", payload.RecipientEmail, payload.CampaignID)
 }
+

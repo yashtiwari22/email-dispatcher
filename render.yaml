@@ -1,19 +1,5 @@
 services:
-  # 1. Next.js 15 App Router Web Dashboard
-  - type: web
-    name: email-dispatcher-web
-    env: docker
-    dockerfilePath: ./infra/Dockerfile.web
-    plan: free
-    region: oregon
-    envVars:
-      - key: NEXT_PUBLIC_API_URL
-        fromService:
-          type: web
-          name: email-dispatcher-api
-          property: host
-
-  # 2. Go REST API Gateway & Embedded Worker Engine
+  # 1. Go REST API Gateway & Embedded Worker Engine
   - type: web
     name: email-dispatcher-api
     env: docker
@@ -52,7 +38,7 @@ services:
           name: email-dispatcher-redis
           property: port
 
-  # 3. Redis Key-Value Store
+  # 2. Redis Key-Value Store
   - type: redis
     name: email-dispatcher-redis
     plan: free
@@ -60,10 +46,11 @@ services:
     ipAllowList: []
 
 databases:
-  # 4. PostgreSQL Database
+  # 3. PostgreSQL Database
   - name: email-dispatcher-db
     databaseName: email_dispatcher
     plan: free
     region: oregon
+
 
 

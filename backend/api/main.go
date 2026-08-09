@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -77,6 +78,9 @@ func main() {
 				Queues: map[string]int{
 					"default": 10,
 				},
+				ErrorHandler: asynq.ErrorHandlerFunc(func(ctx context.Context, task *asynq.Task, err error) {
+					processor.HandleDLQ(ctx, task, err)
+				}),
 			},
 		)
 

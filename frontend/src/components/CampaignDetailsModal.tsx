@@ -11,8 +11,9 @@ import {
   Mail,
   User,
   FileText,
+  Send,
 } from "lucide-react";
-import { CampaignDetails, getCampaignDetails, Recipient } from "@/lib/api";
+import { CampaignDetails, getCampaignDetails, dispatchCampaign, Recipient } from "@/lib/api";
 
 interface CampaignDetailsModalProps {
   campaignId: number;
@@ -27,6 +28,7 @@ export default function CampaignDetailsModal({
 }: CampaignDetailsModalProps) {
   const [details, setDetails] = useState<CampaignDetails | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isDispatching, setIsDispatching] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
@@ -39,6 +41,18 @@ export default function CampaignDetailsModal({
       console.error("Failed to load campaign details:", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDispatch = async () => {
+    setIsDispatching(true);
+    try {
+      await dispatchCampaign(campaignId);
+      await fetchDetails();
+    } catch (err) {
+      console.error("Failed to dispatch campaign:", err);
+    } finally {
+      setIsDispatching(false);
     }
   };
 
@@ -83,12 +97,24 @@ export default function CampaignDetailsModal({
               </p>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="rounded-lg p-1.5 text-zinc-400 hover:bg-zinc-800 hover:text-white transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            {countPending > 0 && (
+              <button
+                onClick={handleDispatch}
+                disabled={isDispatching}
+                className="flex items-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-semibold text-white hover:bg-indigo-500 transition-all shadow-md shadow-indigo-600/20 disabled:opacity-50"
+              >
+                <Send className={`w-3.5 h-3.5 ${isDispatching ? "animate-spin" : ""}`} />
+                <span>{isDispatching ? "Enqueuing..." : `Dispatch ${countPending} Pending`}</span>
+              </button>
+            )}
+            <button
+              onClick={onClose}
+              className="rounded-lg p-1.5 text-zinc-400 hover:bg-zinc-800 hover:text-white transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* Content Body */}

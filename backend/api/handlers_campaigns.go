@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/yashtiwari22/email-dispatcher/backend/db"
+	"github.com/yashtiwari22/email-dispatcher/backend/engine"
 )
 
 // CreateCampaignRequest defines incoming JSON payload for campaign creation.
@@ -27,7 +28,61 @@ func (s *Server) registerCampaignRoutes() {
 	s.router.HandleFunc("GET /api/v1/campaigns", s.handleListCampaigns)
 	s.router.HandleFunc("GET /api/v1/campaigns/{id}", s.handleGetCampaign)
 	s.router.HandleFunc("PATCH /api/v1/campaigns/{id}/status", s.handleUpdateCampaignStatus)
+	s.router.HandleFunc("POST /api/v1/campaigns/{id}/dispatch", s.handleDispatchCampaign)
 }
+
+// handleDispatchCampaign finds pending recipients for a campaign and enqueues them into Redis Asynq queue.
+func (s *Server) handleDispatchCampaign(w http.ResponseWriter, r *http.Request) {
+	idStr := r.PathValue("id")
+	id, err := strconv.ParseUint(idStr, 10, 32)
+	if err != nil {
+		respondError(w, http.StatusBadRequest, "Invalid campaign ID")
+		return
+	}
+	campaignID := uint(id)
+
+	var campaign db.Campaign
+	if err := s.db.Preload("Recipients").First(&campaign, campaignID).Error; err != nil {
+		respondError(w, http.StatusNotFound, "Campaign not found")
+		return
+	}
+
+	var pendingRecipients []db.Recipient
+	if err := s.db.Where("campaign_id = ? AND status = ?", campaignID, db.RecipientStatusPending).Find(&pendingRecipients).Error; err != nil {
+		respondError(w, http.StatusInternalServerError, "Failed to fetch pending recipients")
+		return
+	}
+
+	dispatchedCount := 0
+	for _, r := range pendingRecipients {
+		if s.asynqClient != nil {
+			payload := engine.EmailTaskPayload{
+				CampaignID:     campaign.ID,
+				RecipientID:    r.ID,
+				RecipientName:  r.Name,
+				RecipientEmail: r.Email,
+				SubjectTmpl:    campaign.Subject,
+				BodyTmpl:       campaign.BodyTemplate,
+			}
+
+			task, err := engine.NewEmailDispatchTask(payload)
+			if err == nil {
+				_, _ = s.asynqClient.Enqueue(task)
+				dispatchedCount++
+			}
+		}
+	}
+
+	// Update status to queued/processing
+	s.db.Model(&campaign).Update("status", db.CampaignStatusQueued)
+
+	respondJSON(w, http.StatusOK, map[string]interface{}{
+		"campaign_id":      campaignID,
+		"dispatched_count": dispatchedCount,
+		"total_pending":    len(pendingRecipients),
+	})
+}
+
 
 // handleCreateCampaign creates a new campaign record in database.
 func (s *Server) handleCreateCampaign(w http.ResponseWriter, r *http.Request) {

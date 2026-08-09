@@ -114,6 +114,13 @@ export async function replayDLQRecord(id: number) {
   return res.json();
 }
 
+// Dispatch pending campaign recipients
+export async function dispatchCampaign(id: number): Promise<{ campaign_id: number; dispatched_count: number }> {
+  const res = await fetch(`${getApiBaseUrl()}/api/v1/campaigns/${id}/dispatch`, { method: "POST" });
+  if (!res.ok) throw new Error("Failed to dispatch campaign");
+  return res.json();
+}
+
 // Subscribe to real-time SSE stream for a campaign
 export function subscribeToCampaignSSE(
   campaignId: number,

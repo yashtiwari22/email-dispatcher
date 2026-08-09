@@ -89,11 +89,11 @@ main (default trunk branch)
 ## 🥞 Stack Layer 3: High-Throughput Dispatcher Engine & Asynq Worker Pool (`backend/engine`)
 **Branch**: `layer-3-worker-engine` | **Base Branch Target**: `layer-2-db-schema` (`PR #3`)
 
-- [ ] **3.1 Module Initialization**: Initialize `backend/engine` natively via `go mod init` and `go work use ./backend/engine`.
-- [ ] **3.2 Worker Server**: Implement `backend/engine/` using Redis-backed `Asynq` queue with concurrency limits and rate limiters.
-- [ ] **3.3 Template Caching & SMTP**: Implement thread-safe `html/template` caching engine and SMTP connection pool.
-- [ ] **3.4 Resilience & DLQ**: Implement exponential backoff retry policy and automatic dead-letter queue (DLQ) capture for failed jobs.
-- [ ] **3.5 Engine Tests**: Add unit & integration tests for job dispatching, template execution, SMTP client, and DLQ capture (`backend/engine/template_test.go`).
+- [x] **3.1 Module Initialization**: Initialize `backend/engine` natively via `go mod init` and `go work use ./backend/engine`.
+- [x] **3.2 Worker Server**: Implement `backend/engine/` using Redis-backed `Asynq` queue with concurrency limits and rate limiters.
+- [x] **3.3 Template Caching & SMTP**: Implement thread-safe `html/template` caching engine and SMTP connection pool.
+- [x] **3.4 Resilience & DLQ**: Implement exponential backoff retry policy and automatic dead-letter queue (DLQ) capture for failed jobs.
+- [x] **3.5 Engine Tests**: Add unit & integration tests for job dispatching, template execution, SMTP client, and DLQ capture (`backend/engine/template_test.go`).
 - [ ] **3.6 Layer 3 Stack Commit & Push**:
   ```bash
   gh stack add layer-3-worker-engine

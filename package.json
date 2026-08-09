@@ -1,14 +1,16 @@
 {
   "name": "email-dispatcher",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "lint": "turbo lint",
+    "test": "turbo test"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "devDependencies": {
+    "turbo": "^2.10.9"
+  },
   "packageManager": "pnpm@9.15.4",
   "type": "module"
 }

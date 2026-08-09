@@ -1,4 +1,11 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+function getApiBaseUrl(): string {
+  if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
+  if (typeof window !== "undefined") {
+    const host = window.location.hostname || "127.0.0.1";
+    return `http://${host}:8080`;
+  }
+  return "http://127.0.0.1:8080";
+}
 
 export interface Campaign {
   id: number;
@@ -35,14 +42,14 @@ export interface ProgressEvent {
 
 // Fetch all campaigns
 export async function getCampaigns(): Promise<Campaign[]> {
-  const res = await fetch(`${API_BASE_URL}/api/v1/campaigns`, { cache: "no-store" });
+  const res = await fetch(`${getApiBaseUrl()}/api/v1/campaigns`, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to fetch campaigns");
   return res.json();
 }
 
 // Create new campaign draft
 export async function createCampaign(data: { title: string; subject: string; body_template: string }): Promise<Campaign> {
-  const res = await fetch(`${API_BASE_URL}/api/v1/campaigns`, {
+  const res = await fetch(`${getApiBaseUrl()}/api/v1/campaigns`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
@@ -57,7 +64,7 @@ export async function uploadCSV(campaignId: number, file: File) {
   formData.append("campaign_id", campaignId.toString());
   formData.append("file", file);
 
-  const res = await fetch(`${API_BASE_URL}/api/v1/campaigns/upload`, {
+  const res = await fetch(`${getApiBaseUrl()}/api/v1/campaigns/upload`, {
     method: "POST",
     body: formData,
   });
@@ -71,8 +78,8 @@ export async function uploadCSV(campaignId: number, file: File) {
 // Fetch DLQ records
 export async function getDLQRecords(statusFilter?: string): Promise<DLQRecord[]> {
   const url = statusFilter
-    ? `${API_BASE_URL}/api/v1/dlq?status=${statusFilter}`
-    : `${API_BASE_URL}/api/v1/dlq`;
+    ? `${getApiBaseUrl()}/api/v1/dlq?status=${statusFilter}`
+    : `${getApiBaseUrl()}/api/v1/dlq`;
   const res = await fetch(url, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to fetch DLQ records");
   return res.json();
@@ -80,7 +87,7 @@ export async function getDLQRecords(statusFilter?: string): Promise<DLQRecord[]>
 
 // Replay DLQ failed job
 export async function replayDLQRecord(id: number) {
-  const res = await fetch(`${API_BASE_URL}/api/v1/dlq/${id}/replay`, { method: "POST" });
+  const res = await fetch(`${getApiBaseUrl()}/api/v1/dlq/${id}/replay`, { method: "POST" });
   if (!res.ok) throw new Error("Failed to replay DLQ job");
   return res.json();
 }
@@ -91,7 +98,7 @@ export function subscribeToCampaignSSE(
   onData: (event: ProgressEvent) => void,
   onError?: (err: any) => void
 ): () => void {
-  const eventSource = new EventSource(`${API_BASE_URL}/api/v1/campaigns/${campaignId}/stream`);
+  const eventSource = new EventSource(`${getApiBaseUrl()}/api/v1/campaigns/${campaignId}/stream`);
 
   eventSource.onmessage = (e) => {
     try {

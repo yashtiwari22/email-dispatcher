@@ -13,7 +13,7 @@ services:
           name: email-dispatcher-api
           property: host
 
-  # 2. Go REST API Gateway
+  # 2. Go REST API Gateway & Embedded Worker Engine
   - type: web
     name: email-dispatcher-api
     env: docker
@@ -52,46 +52,7 @@ services:
           name: email-dispatcher-redis
           property: port
 
-  # 3. Go Asynq Worker Engine (Background Worker)
-  - type: worker
-    name: email-dispatcher-worker
-    env: docker
-    dockerfilePath: ./infra/Dockerfile.worker
-    plan: free
-    region: oregon
-    envVars:
-      - key: DB_HOST
-        fromDatabase:
-          name: email-dispatcher-db
-          property: host
-      - key: DB_PORT
-        fromDatabase:
-          name: email-dispatcher-db
-          property: port
-      - key: DB_USER
-        fromDatabase:
-          name: email-dispatcher-db
-          property: user
-      - key: DB_PASSWORD
-        fromDatabase:
-          name: email-dispatcher-db
-          property: password
-      - key: DB_NAME
-        fromDatabase:
-          name: email-dispatcher-db
-          property: database
-      - key: REDIS_HOST
-        fromService:
-          type: redis
-          name: email-dispatcher-redis
-          property: host
-      - key: REDIS_PORT
-        fromService:
-          type: redis
-          name: email-dispatcher-redis
-          property: port
-
-  # 4. Redis Key-Value Store
+  # 3. Redis Key-Value Store
   - type: redis
     name: email-dispatcher-redis
     plan: free
@@ -99,9 +60,10 @@ services:
     ipAllowList: []
 
 databases:
-  # 5. PostgreSQL Database
+  # 4. PostgreSQL Database
   - name: email-dispatcher-db
     databaseName: email_dispatcher
     plan: free
     region: oregon
+
 

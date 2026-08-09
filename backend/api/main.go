@@ -5,9 +5,11 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 
 	"github.com/hibiken/asynq"
 	"github.com/yashtiwari22/email-dispatcher/backend/db"
+	"github.com/yashtiwari22/email-dispatcher/backend/engine"
 )
 
 func getEnvOrDefault(key, defaultValue string) string {
@@ -55,6 +57,38 @@ func main() {
 	asynqClient := asynq.NewClient(asynq.RedisClientOpt{Addr: redisAddr})
 	defer asynqClient.Close()
 
+	// Initialize SMTP & Worker processor in background goroutine for zero-cost single container deployment
+	smtpHost := getEnvOrDefault("SMTP_HOST", "localhost")
+	smtpPortStr := getEnvOrDefault("SMTP_PORT", "1025")
+	smtpPort, _ := strconv.Atoi(smtpPortStr)
+	smtpUser := os.Getenv("SMTP_USER")
+	smtpPassword := os.Getenv("SMTP_PASSWORD")
+	fromEmail := getEnvOrDefault("FROM_EMAIL", "noreply@dispatcher.com")
+
+	smtpClient := engine.NewSMTPSender(smtpHost, smtpPort, smtpUser, smtpPassword, fromEmail)
+	tmplEngine := engine.NewTemplateEngine()
+	processor := engine.NewWorkerProcessor(database, smtpClient, tmplEngine)
+
+	go func() {
+		srv := asynq.NewServer(
+			asynq.RedisClientOpt{Addr: redisAddr},
+			asynq.Config{
+				Concurrency: 10,
+				Queues: map[string]int{
+					"default": 10,
+				},
+			},
+		)
+
+		mux := asynq.NewServeMux()
+		mux.HandleFunc(engine.TypeEmailDispatch, processor.ProcessTask)
+
+		log.Printf("[Embedded Worker Engine] Starting worker loop on Redis %s...", redisAddr)
+		if err := srv.Run(mux); err != nil {
+			log.Printf("[Embedded Worker Engine] Worker loop stopped: %v", err)
+		}
+	}()
+
 	server := NewServer(database, asynqClient)
 
 	port := getEnvOrDefault("PORT", "8080")
@@ -65,3 +99,4 @@ func main() {
 		log.Fatalf("API Server failed: %v", err)
 	}
 }
+
